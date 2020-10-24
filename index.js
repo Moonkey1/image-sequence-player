@@ -15,6 +15,8 @@ $(function() {
 		maxZoom: 3.2,
 		fps: 18,
 		playReversed: false,
+		dragReversed: false,
+		dragSensitivity: 5,
 	});
 
 });

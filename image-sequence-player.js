@@ -46,6 +46,14 @@ function ImageSequencePlayer(settings) {
 		var currentFrame = 0;
 		var zoomedIn = false;
 		var fullscreen = false;
+		
+		// Drag state
+		var dragging = false;
+		var wasPlaying = true;
+		var mouse = { x: 0, y: 0 }
+		var currentPositionX;
+		var currentPositionY;
+
 
 		// Initialize jquery panzoom
 		$zoomContainer.panzoom({
@@ -94,6 +102,191 @@ function ImageSequencePlayer(settings) {
 			if (fullscreen) exitFullscreen();
 			else goFullscreen();
 		});
+
+
+		
+
+
+
+
+
+
+
+
+		$imageContainer.css("cursor", "-webkit-grab");
+		$imageContainer.css("cursor", "grab");
+
+		$imageContainer.on("mousedown touchstart", function(event) {
+			if (fullscreen) return;
+
+			event.preventDefault();
+	
+			$imageContainer.css("cursor", "-webkit-grabbing");
+			$imageContainer.css("cursor", "grabbing");
+	
+			wasPlaying = playing;
+			pause();
+	
+			if (event.type === "touchstart") {
+				var event = event || window.event;
+				var touches = event.touches || event.originalEvent.touches;
+	
+				if (touches.length === 1) {
+					currentPositionX = touches[0].pageX;
+					currentPositionY = touches[0].pageY;
+				} else if (touches.length === 2) {
+					var dx = touches[0].pageX - touches[1].pageX;
+					var dy = touches[0].pageY - touches[1].pageY;
+					touchZoomDistanceEnd = touchZoomDistanceStart = Math.sqrt(dx * dx + dy * dy);
+				}
+			} else {
+				currentPositionX = event.pageX;
+				currentPositionY = event.pageY;
+			}
+	
+			var offset = $(this).offset();
+	
+			var posRelativeX = event.pageX - offset.left;
+			var posRelativeY = event.pageY - offset.top;
+			if (event.type === "touchstart") {
+				posRelativeX = touches[0].pageX - offset.left;
+				posRelativeY = touches[0].pageY - offset.top;
+			}	
+	
+			dragging = true;
+		});
+	
+		$imageContainer.on("mouseup touchend /*mouseout*/", function (event) {
+			$imageContainer.css("cursor", "-webkit-grab");
+			$imageContainer.css("cursor", "grab");
+	
+			if (dragging && !playing) {
+				dragging = false;
+	
+				if (wasPlaying) play();
+				else pause();
+			}	
+		});
+	
+		$imageContainer.on("mousemove touchmove", function(event) {
+			var offset = $(this).offset();
+	
+			var posRelativeX = event.pageX - offset.left;
+			var posRelativeY = event.pageY - offset.top;
+	
+			if (event.type === "touchmove") {
+				var eventTouch = event || window.event;
+				var touchesEv = eventTouch.touches || eventTouch.originalEvent.touches;
+	
+				posRelativeX = touchesEv[0].pageX - offset.left;
+				posRelativeY = touchesEv[0].pageY - offset.top;
+			}
+	
+			mouse.x = posRelativeX;
+			mouse.y = posRelativeY;
+	
+			if (dragging) {
+				var xPosition;
+				var yPosition;
+	
+				$imageContainer.css("cursor", "-webkit-grabbing");
+				$imageContainer.css("cursor", "grabbing");
+	
+				if (event.type === "touchmove") {	
+					var event = event || window.event;
+					var touches = event.touches || event.originalEvent.touches;
+	
+					if (touches.length === 1) {
+
+						xPosition = touches[0].pageX;
+						yPosition = touches[0].pageY;
+
+					} else if (touches.length === 2) {
+
+						/*
+						var dx = touches[0].pageX - touches[1].pageX;
+						var dy = touches[0].pageY - touches[1].pageY;
+	
+						touchZoomDistanceEnd = Math.sqrt(dx * dx + dy * dy);
+	
+						var factor = touchZoomDistanceStart / touchZoomDistanceEnd;
+						touchZoomDistanceStart = touchZoomDistanceEnd;
+	
+						if (touchZoomDistanceEnd > zoomTouchDistanceOld) {
+							valueZoom += stepPinchZoom;
+							valueZoom = (valueZoom>maxZoom) ? maxZoom : valueZoom;
+						} else {
+							valueZoom -= stepPinchZoom;
+							valueZoom = (valueZoom<minZoom) ? minZoom : valueZoom;
+						}
+	
+						if (valueZoom <= maxZoom && valueZoom >= minZoom) {
+							//document.getElementById("log").innerHTML = valueZoom;
+// TODO							doZoom1(false, "", "", false);
+						}
+	
+						if (valueZoom < 1.1) {
+// TODO							exitZoom(false);
+						}
+	
+						zoomTouchDistanceOld = touchZoomDistanceEnd;
+						*/
+					}
+
+				} else {
+
+					xPosition = event.pageX;
+					yPosition = event.pageY;
+
+				}
+	
+				//if (!isInertiaEnabled) {
+					if (Math.abs(currentPositionX - xPosition) >= settings.dragSensitivity) {
+						if (currentPositionX - xPosition >= settings.dragSensitivity) {
+							if (settings.dragReversed) prevFrame();
+							else nextFrame();
+						} else {
+							if (settings.dragReversed) nextFrame();
+							else prevFrame();
+						}
+	
+						currentPositionX = xPosition;
+					}
+				//}
+
+			}
+		});
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		function showPlayButton() {
 			$playButton.removeClass("isp-controls-pause").addClass("isp-controls-play");
 		}
@@ -233,7 +426,7 @@ function loadImages(settings, progressCallback, completionCallback) {
 	}, false);
 	video.src = settings.video;
 
-	
+
 	function generateNextFrame() {
 		video.currentTime = ((nextFrame + 1) / settings.frames) * video.duration;
 	}
@@ -275,6 +468,7 @@ function loadImages(settings, progressCallback, completionCallback) {
 
 
 }
+
 
 
 
