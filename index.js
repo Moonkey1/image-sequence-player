@@ -1,5 +1,6 @@
-var imageSequencePlayers = [	
-	{
+$(function() {
+
+	new ImageSequencePlayer({
 		selector: "#image-sequence-1",
 		video: "video/video.mp4",
 		frames: 36,
@@ -14,6 +15,6 @@ var imageSequencePlayers = [
 		maxZoom: 3.2,
 		fps: 18,
 		playReversed: false,
-	},
+	});
 
-];
+});
