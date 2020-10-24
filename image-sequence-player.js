@@ -219,7 +219,6 @@ function createLoadBar($parent) {
 function loadImages(settings, progressCallback, completionCallback) {
 	var video = document.createElement("video");
 	video.preload = "auto";
-	video.src = settings.video;
 	video.autoplay = true;
 	video.muted = true;
 	video.setAttribute("playsinline", "");
@@ -232,8 +231,9 @@ function loadImages(settings, progressCallback, completionCallback) {
 	video.addEventListener('loadeddata', function() {
 		generateNextFrame();
 	}, false);
+	video.src = settings.video;
 
-
+	
 	function generateNextFrame() {
 		video.currentTime = ((nextFrame + 1) / settings.frames) * video.duration;
 	}
