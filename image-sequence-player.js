@@ -47,14 +47,6 @@ function ImageSequencePlayer(settings) {
 		var zoomedIn = false;
 		var fullscreen = false;
 		
-		// Drag state
-		var dragging = false;
-		var wasPlaying = true;
-		var mouse = { x: 0, y: 0 }
-		var currentPositionX;
-		var currentPositionY;
-
-
 		// Initialize jquery panzoom
 		$zoomContainer.panzoom({
 			minScale: 1,
@@ -94,7 +86,7 @@ function ImageSequencePlayer(settings) {
 				pause();
 				showPlayButton();
 				hideTimelineControls();
-				zoomIn();
+				zoomIn(settings.maxZoom);
 				showZoomOutButton();
 			}				
 		});
@@ -104,15 +96,18 @@ function ImageSequencePlayer(settings) {
 		});
 
 
-		
+		// Drag state
+		var dragging = false;
+		var wasPlaying = true;
+		var mouse = { x: 0, y: 0 }
+		var currentPositionX;
+		var currentPositionY;
+		var touchZoomDistanceEnd;
+		var touchZoomDistanceStart;
+		var zoomTouchDistanceOld;
+		var stepPinchZoom = 0.1;
 
-
-
-
-
-
-
-
+		// Drag Handlers
 		$imageContainer.css("cursor", "-webkit-grab");
 		$imageContainer.css("cursor", "grab");
 
@@ -203,7 +198,6 @@ function ImageSequencePlayer(settings) {
 
 					} else if (touches.length === 2) {
 
-						/*
 						var dx = touches[0].pageX - touches[1].pageX;
 						var dy = touches[0].pageY - touches[1].pageY;
 	
@@ -221,16 +215,14 @@ function ImageSequencePlayer(settings) {
 						}
 	
 						if (valueZoom <= maxZoom && valueZoom >= minZoom) {
-							//document.getElementById("log").innerHTML = valueZoom;
-// TODO							doZoom1(false, "", "", false);
+							zoomIn(valueZoom);
 						}
 	
 						if (valueZoom < 1.1) {
-// TODO							exitZoom(false);
+							zoomOut();
 						}
 	
 						zoomTouchDistanceOld = touchZoomDistanceEnd;
-						*/
 					}
 
 				} else {
@@ -256,35 +248,6 @@ function ImageSequencePlayer(settings) {
 
 			}
 		});
-
-		
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 		function showPlayButton() {
@@ -325,9 +288,9 @@ function ImageSequencePlayer(settings) {
 			if (playInterval) clearInterval(playInterval);
 			playInterval= undefined;
 		}
-		function zoomIn() {
+		function zoomIn(zoomLevel) {
 			zoomedIn = true;
-			$zoomContainer.show().panzoom('zoom', settings.maxZoom, { animate: false });
+			$zoomContainer.show().panzoom('zoom', zoomLevel, { animate: false });
 			$imageContainer.hide();
 			zoomImage.src = largeImages[currentFrame].src;
 		}
@@ -465,10 +428,4 @@ function loadImages(settings, progressCallback, completionCallback) {
 	}
 
 }
-
-
-}
-
-
-
 
