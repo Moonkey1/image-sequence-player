@@ -1,5 +1,4 @@
 function ImageSequencePlayer(settings) {
-	console.log(settings);
 
 	// Set the container which was passed in to position: relative so everything holds its shape
 	var $container = $(settings.selector);
@@ -229,17 +228,14 @@ function loadImages(settings, progressCallback, completionCallback) {
 	var largeImages = [];
 
 	var nextFrame = 0;
-	var frameTime;
 
 	video.addEventListener('loadeddata', function() {
-		frameTime = video.duration / settings.frames;
-
 		generateNextFrame();
 	}, false);
 
 
 	function generateNextFrame() {
-		video.currentTime = nextFrame * frameTime;
+		video.currentTime = ((nextFrame + 1) / settings.frames) * video.duration;
 	}
 	video.addEventListener("seeked", function() {
 
