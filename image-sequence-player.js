@@ -342,90 +342,91 @@ function ImageSequencePlayer(settings) {
 	}
 
 
-// Load bar object. Handles its own markup. setProgress(progress) to update it
-function createLoadBar($parent) {
-	var $loadBar = $("<div>").addClass("isp-load-bar").appendTo($parent);
-	var $content = $("<div>").addClass("isp-load-bar-content").appendTo($loadBar);
+	// Load bar object. Handles its own markup. setProgress(progress) to update it
+	function createLoadBar($parent) {
+		var $loadBar = $("<div>").addClass("isp-load-bar").appendTo($parent);
+		var $content = $("<div>").addClass("isp-load-bar-content").appendTo($loadBar);
 
-	var $title = $("<div>").addClass("isp-load-bar-title").text("Loading").appendTo($content);
-	var $barContainer = $("<div>").addClass("isp-load-bar-bar-container").appendTo($content);
-	var $bar = $("<div>").addClass("isp-load-bar-bar").appendTo($barContainer);
-	var $percent = $("<div>").addClass("isp-load-bar-percent").appendTo($content);
+		var $title = $("<div>").addClass("isp-load-bar-title").text("Loading").appendTo($content);
+		var $barContainer = $("<div>").addClass("isp-load-bar-bar-container").appendTo($content);
+		var $bar = $("<div>").addClass("isp-load-bar-bar").appendTo($barContainer);
+		var $percent = $("<div>").addClass("isp-load-bar-percent").appendTo($content);
 
-	function setProgress(progress) {
-		$bar.css("width", (progress * 100) + "%");
-		$percent.text(Math.round(progress * 100) + "%");
-	}
-
-	function remove() {
-		$loadBar.remove();
-	}
-
-	setProgress(0);
-
-	return {
-		$loadBar: $loadBar,
-		setProgress: setProgress,
-		remove: remove,
-	}
-}
-
-
-// Load images based on a settings object. Callbacks for progress and lists of normal & large sized image sequences
-function loadImages(settings, progressCallback, completionCallback) {
-	var video = document.createElement("video");
-	video.preload = "auto";
-	video.autoplay = true;
-	video.muted = true;
-	video.setAttribute("playsinline", "");
-
-	var normalImages = [];
-	var largeImages = [];
-
-	var nextFrame = 0;
-
-	video.addEventListener('loadeddata', function() {
-		generateNextFrame();
-	}, false);
-	video.src = settings.video;
-
-
-	function generateNextFrame() {
-		video.currentTime = ((nextFrame + 1) / settings.frames) * video.duration;
-	}
-	video.addEventListener("seeked", function() {
-
-		normalImages.push(createFrameImage(settings.normal.width, settings.normal.height));
-		largeImages.push(createFrameImage(settings.large.width, settings.large.height));
-
-		if (progressCallback) progressCallback((nextFrame + 1) / settings.frames);
-
-		nextFrame++;
-		if (nextFrame >= settings.frames) {
-			allImagesGenerated();
-		} else {
-			generateNextFrame();
+		function setProgress(progress) {
+			$bar.css("width", (progress * 100) + "%");
+			$percent.text(Math.round(progress * 100) + "%");
 		}
-	});
 
-	function createFrameImage(width, height) {
-		var canvas = document.createElement("canvas");
-		var ctx = canvas.getContext("2d");
+		function remove() {
+			$loadBar.remove();
+		}
 
-		canvas.width = width;
-		canvas.height = height;
-		ctx.drawImage(video, 0, 0, width, height);
+		setProgress(0);
 
-		var data = canvas.toDataURL("image/jpeg");
-
-		var img = new Image();
-		img.src = data;
-		return img;
+		return {
+			$loadBar: $loadBar,
+			setProgress: setProgress,
+			remove: remove,
+		}
 	}
 
-	function allImagesGenerated() {
-		if (completionCallback) completionCallback(normalImages, largeImages);
+
+	// Load images based on a settings object. Callbacks for progress and lists of normal & large sized image sequences
+	function loadImages(settings, progressCallback, completionCallback) {
+		var video = document.createElement("video");
+		video.preload = "auto";
+		video.autoplay = true;
+		video.muted = true;
+		video.setAttribute("playsinline", "");
+
+		var normalImages = [];
+		var largeImages = [];
+
+		var nextFrame = 0;
+
+		video.addEventListener('loadeddata', function() {
+			generateNextFrame();
+		}, false);
+		video.src = settings.video;
+
+
+		function generateNextFrame() {
+			video.currentTime = ((nextFrame + 1) / settings.frames) * video.duration;
+		}
+		video.addEventListener("seeked", function() {
+
+			normalImages.push(createFrameImage(settings.normal.width, settings.normal.height));
+			largeImages.push(createFrameImage(settings.large.width, settings.large.height));
+
+			if (progressCallback) progressCallback((nextFrame + 1) / settings.frames);
+
+			nextFrame++;
+			if (nextFrame >= settings.frames) {
+				allImagesGenerated();
+			} else {
+				generateNextFrame();
+			}
+		});
+
+		function createFrameImage(width, height) {
+			var canvas = document.createElement("canvas");
+			var ctx = canvas.getContext("2d");
+
+			canvas.width = width;
+			canvas.height = height;
+			ctx.drawImage(video, 0, 0, width, height);
+
+			var data = canvas.toDataURL("image/jpeg");
+
+			var img = new Image();
+			img.src = data;
+			return img;
+		}
+
+		function allImagesGenerated() {
+			if (completionCallback) completionCallback(normalImages, largeImages);
+		}
+
 	}
 
 }
-
